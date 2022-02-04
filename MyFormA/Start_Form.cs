@@ -19,17 +19,26 @@ namespace MyFormA
 
             Button st_btn = new Button
             {
-                Text = "Suur Saal",
+                Text = "Venom",
                 
-                Location = new System.Drawing.Point(10, 10)
+                Location = new System.Drawing.Point(700, 600)
             };
+            Button AdminPanel = new Button
+            {
+                Location = new System.Drawing.Point(450, 575),
+                Size = new System.Drawing.Size(150, 60),
+                BackColor = Color.LightBlue,
+                Text = "AdminPanel"
+            };
+            AdminPanel.Click += AdminPanel_Click;
+            this.Controls.Add(AdminPanel);
             st_btn.Click += St_btn_Click;
             this.Controls.Add(st_btn);
             Button st_btn2 = new Button()
             {
-                Text = "Väike Saal",
+                Text = "Titanik",
                 
-                Location = new System.Drawing.Point(10, 50)
+                Location = new System.Drawing.Point(200,600)
                 
             };
             st_btn2.Click += St_btn_Click1; 
@@ -59,8 +68,17 @@ namespace MyFormA
             this.Controls.Add(film2);
             film2.Click += Film_Click1;
         }
+
+        private void AdminPanel_Click(object sender, EventArgs e)
+        {
+            Admin_Form uus_aken = new Admin_Form();
+            uus_aken.StartPosition = FormStartPosition.CenterScreen;
+            uus_aken.ShowDialog();
+        }
+
         string filminimetus;
 
+        
         private void Film_Click(object sender, EventArgs e)
         {
             filminimetus = Film();

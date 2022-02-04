@@ -1,16 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Mail;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Forms;
-using System.Data.SqlClient;
-using System.Data;
 
 namespace MyFormA
 {
@@ -20,16 +17,15 @@ namespace MyFormA
         Button[] btn = new Button[4];
         string[] texts = new string[5];
         TableLayoutPanel tlp = new TableLayoutPanel();
-        Button btn_tabel;
-        
-        static List <Pilet> piletid;
-        int k, r;
-
-        
+        Button btn_tabel;       
+        static List<Pilet> piletid;
+        int k, r;       
         string film2;
+
         static string[] read_kohad;
         static string conn_KinoDB = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\opilane\source\repos\finalForm4\MyFormA\AppData\Kino_DB.mdf;Integrated Security=True";
         SqlConnection connect_to_DB= new SqlConnection(conn_KinoDB);
+
         SqlCommand command;
         SqlDataAdapter adapter;
 
@@ -91,9 +87,9 @@ namespace MyFormA
         {
             try
             {
-                 StreamReader f = new StreamReader(@"..\..\Piletid\vaikeSaal.txt");
+                /* StreamReader f = new StreamReader(@"..\..\Piletid\vaikeSaal.txt");
                  read_kohad = f.ReadToEnd().Split(';');
-                 f.Close();
+                 f.Close();*/
                 connect_to_DB.Open();
                 adapter = new SqlDataAdapter("SELECT * FROM [dbo].[Piletid]", connect_to_DB);
                 DataTable tabel = new DataTable();
@@ -103,7 +99,7 @@ namespace MyFormA
                 foreach (DataRow row in tabel.Rows)
                 {
                     var rida = row["Rida"];
-                    var koht = row["Koht"];
+                    var koht = row["Kohad"];
                     read_kohad[index++] = $"{rida}{koht}";
                 }
                 connect_to_DB.Close();
@@ -168,19 +164,17 @@ namespace MyFormA
 
         }
 
-        public void Saada_piletid(List<Pilet> piletid)
+        public void Saada_piletid(List <Pilet> piletid)
         {
-
+            connect_to_DB.Open();
             string text = "Nikolai Sinu ost on \n";
             foreach (var item in piletid)
-            {
-                connect_to_DB.Open();
+            {         
                 text += "Pilet:\n" + "Rida: " + item.Rida + "Koht: " + item.Koht + "\n";
-                command = new SqlCommand("INSERT INTO Piletid(Rida,Kohad,Filmid) VALUES(@rida,@koht,@film)",
-                    connect_to_DB);
+                command = new SqlCommand("INSERT INTO Piletid(Rida,Kohad,Filmid) VALUES(@rida,@kohad,@filmid)", connect_to_DB);
                 command.Parameters.AddWithValue("@rida", item.Rida);
-                command.Parameters.AddWithValue("@koht", item.Koht);
-                command.Parameters.AddWithValue("@film", 1);
+                command.Parameters.AddWithValue("@kohad", item.Koht);
+                command.Parameters.AddWithValue("@filmid", 1);
                 command.ExecuteNonQuery();
 
 
@@ -190,7 +184,7 @@ namespace MyFormA
 
 
 
-                string email = "programmeeriminetthk@gmail.com";
+            string email = "programmeeriminetthk@gmail.com";
             string password = "2.kuursus tarpv20";
             SmtpClient client = new SmtpClient("smtp.gmail.com");
             client.Port = 587;

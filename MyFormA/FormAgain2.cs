@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Mail;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Forms;
 
 namespace MyFormA
@@ -21,9 +20,15 @@ namespace MyFormA
         Button btn_tabel;
         static List<Pilet> piletid;
         int k, r;
-        string film;
-        
+        string film2;
+
         static string[] read_kohad;
+        static string conn_KinoDB = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\opilane\source\repos\finalForm4\MyFormA\AppData\Kino_DB.mdf;Integrated Security=True";
+        SqlConnection connect_to_DB = new SqlConnection(conn_KinoDB);
+
+        SqlCommand command;
+        SqlDataAdapter adapter;
+
         public FormAgain2()
         { }
         public FormAgain2(string title, string body, string button1, string button2, string button3, string button4)
@@ -82,9 +87,22 @@ namespace MyFormA
         {
             try
             {
-                StreamReader f = new StreamReader(@"..\..\Piletid\suurSaali.txt");
-                read_kohad = f.ReadToEnd().Split(';');
-                f.Close();
+                /* StreamReader f = new StreamReader(@"..\..\Piletid\vaikeSaal.txt");
+                 read_kohad = f.ReadToEnd().Split(';');
+                 f.Close();*/
+                connect_to_DB.Open();
+                adapter = new SqlDataAdapter("SELECT * FROM [dbo].[Piletid]", connect_to_DB);
+                DataTable tabel = new DataTable();
+                adapter.Fill(tabel);
+                read_kohad = new string[tabel.Rows.Count];
+                var index = 0;
+                foreach (DataRow row in tabel.Rows)
+                {
+                    var rida = row["Rida"];
+                    var koht = row["Kohad"];
+                    read_kohad[index++] = $"{rida}{koht}";
+                }
+                connect_to_DB.Close();
             }
             catch (Exception e)
             {
@@ -104,7 +122,7 @@ namespace MyFormA
             btn_tabel.Click += new EventHandler(Pileti_valik);
             return btn_tabel;
         }
-        public FormAgain2(int read, int kohad, string film)
+        public FormAgain2(int read, int kohad, string film2)
         {
             this.tlp.ColumnCount = kohad;
             this.tlp.RowCount = read;
@@ -113,7 +131,7 @@ namespace MyFormA
             int i, j;
             read_kohad = Ostetud_piletid();
             piletid = new List<Pilet> { };
-            this.Text = film;
+            this.Text = film2;
             for (i = 0; i < read; i++)
             {
                 this.tlp.RowStyles.Add(new RowStyle(SizeType.Percent));
@@ -148,14 +166,24 @@ namespace MyFormA
 
         public void Saada_piletid(List<Pilet> piletid)
         {
-
+            connect_to_DB.Open();
             string text = "Nikolai Sinu ost on \n";
             foreach (var item in piletid)
             {
                 text += "Pilet:\n" + "Rida: " + item.Rida + "Koht: " + item.Koht + "\n";
-            }
+                command = new SqlCommand("INSERT INTO Piletid(Rida,Kohad,Filmid) VALUES(@rida,@kohad,@filmid)", connect_to_DB);
+                command.Parameters.AddWithValue("@rida", item.Rida);
+                command.Parameters.AddWithValue("@kohad", item.Koht);
+                command.Parameters.AddWithValue("@filmid", 1);
+                command.ExecuteNonQuery();
 
+
+            }
+            connect_to_DB.Close();
             //message.Attachments.Add(new Attachment("file.pdf"));
+
+
+
             string email = "programmeeriminetthk@gmail.com";
             string password = "2.kuursus tarpv20";
             SmtpClient client = new SmtpClient("smtp.gmail.com");
@@ -196,7 +224,7 @@ namespace MyFormA
                 {
                     Pilet pilet = new Pilet(rida, koht);
                     piletid.Add(pilet);
-                    StreamWriter ost = new StreamWriter(@"..\..\Piletid\suurSaali.txt", true);
+                    StreamWriter ost = new StreamWriter(@"..\..\Piletid\vaikeSaal.txt", true);
                     ost.Write(btn_click.Name.ToString() + ';');
                     ost.Close();
 
